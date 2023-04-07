@@ -76,20 +76,20 @@ class DrawingView(context: Context,attrs:AttributeSet): View(context,attrs) {
             MotionEvent.ACTION_DOWN -> {
                 mDrawPath?.color = color
                 mDrawPath?.brushThickness = mBrushSize
-                mDrawPath?.reset() // Clear any lines and curves from the path, making it empty.
+                mDrawPath?.reset()
                 mDrawPath?.moveTo(
                     touchX,
                     touchY
-                ) // Set the beginning of the next contour to the point (x,y).
+                )
             }
             MotionEvent.ACTION_MOVE -> {
                 mDrawPath?.lineTo(
                     touchX,
                     touchY
-                ) // Add a line from the last point to the specified point (x,y).
+                )
             }
             MotionEvent.ACTION_UP -> {
-                mPaths.add(mDrawPath!!) //Add when to stroke is drawn to canvas and added in the path arraylist
+                mPaths.add(mDrawPath!!)
                 mDrawPath = CustomPath(color, mBrushSize)
             }
             else -> return false

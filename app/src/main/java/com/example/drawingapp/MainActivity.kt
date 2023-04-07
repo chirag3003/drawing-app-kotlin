@@ -24,8 +24,6 @@ class MainActivity : AppCompatActivity() {
         val brushD = Dialog(this)
         brushD.setContentView(R.layout.dialog_brush_size)
         brushD.setTitle("Brush Size: ")
-//        brushD.show()
-
         val smBtn:ImageButton  = brushD.findViewById(R.id.ib_small_brush)
         val mdBtn  = brushD.findViewById<ImageButton>(R.id.ib_medium_brush)
         val lgBtn  = brushD.findViewById<ImageButton>(R.id.ib_large_brush)
