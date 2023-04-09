@@ -15,7 +15,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        drawingView = findViewById<DrawingView>(R.id.drawingView)
+        drawingView = findViewById<DrawingView>(R.id.drawing_view)
         drawingView.setBrushSize(20f)
 
         val linearLayoutColors = findViewById<LinearLayout>(R.id.ll_paint_colors)
@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
         imageButtonCurrentPaint = linearLayoutColors[1] as ImageButton
         imageButtonCurrentPaint.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.pallet_pressed))
 
-        val brushBtn = findViewById<ImageButton>(R.id.ic_brush)
+        val brushBtn = findViewById<ImageButton>(R.id.ib_brush)
         brushBtn.setOnClickListener{
             showBrushSizeDialog()
         }
