@@ -3,10 +3,13 @@ package com.example.drawingapp
 import android.Manifest
 import android.app.AlertDialog
 import android.app.Dialog
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.View
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -19,18 +22,25 @@ import androidx.core.view.get
 class MainActivity : AppCompatActivity() {
     private lateinit var drawingView: DrawingView
     private lateinit var imageButtonCurrentPaint: ImageButton
+    private val openGalleryLauncher: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK && result.data != null) {
+                val bgImage: ImageView = findViewById(R.id.iv_background)
+                bgImage.setImageURI(result.data?.data)
+            }
+        }
     private val activityLauncher: ActivityResultLauncher<Array<String>> =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-            permissions ->
-                permissions.entries.map {
-                    val pName = it.key
-                    val pIsGranted = it.value
-                    println(pIsGranted)
-                    if(pIsGranted){
-                        Toast.makeText(this,"Permission Granted",Toast.LENGTH_LONG).show()
-                    } else
-                        Toast.makeText(this,"Permission Not Granted", Toast.LENGTH_SHORT).show()
-                }
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            permissions.entries.map {
+                val pName = it.key
+                val pIsGranted = it.value
+                if (pIsGranted) {
+                    val intent =
+                        Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                    openGalleryLauncher.launch(intent)
+                } else
+                    Toast.makeText(this, "Permission Not Granted", Toast.LENGTH_SHORT).show()
+            }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,7 +65,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val galleryBtn = findViewById<ImageButton>(R.id.ib_gallery)
-        galleryBtn.setOnClickListener(){
+        galleryBtn.setOnClickListener() {
             requestPermission()
         }
 
@@ -84,20 +94,17 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun requestPermission(){
+    private fun requestPermission() {
         println("it was called")
-        if (shouldShowRequestPermissionRationale(android.Manifest.permission.READ_EXTERNAL_STORAGE)){
-            Toast.makeText(this,"Yes", Toast.LENGTH_SHORT).show()
+        if (shouldShowRequestPermissionRationale(android.Manifest.permission.READ_EXTERNAL_STORAGE)) {
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Permission Required");
             builder.setMessage("We need media permissions for this feature")
-            builder.setNeutralButton("Cancel"){dialog,_ ->
+            builder.setNeutralButton("Cancel") { dialog, _ ->
                 dialog.dismiss()
             }
             builder.show()
-            println("yeah")
         } else {
-            println("Valid")
             activityLauncher.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
         }
     }
