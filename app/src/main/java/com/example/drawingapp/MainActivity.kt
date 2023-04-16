@@ -4,6 +4,9 @@ import android.Manifest
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
@@ -18,6 +21,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.get
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
 
 class MainActivity : AppCompatActivity() {
     private lateinit var drawingView: DrawingView
@@ -70,8 +80,16 @@ class MainActivity : AppCompatActivity() {
         }
 
         val undoBtn = findViewById<ImageButton>(R.id.ib_undo)
-        undoBtn.setOnClickListener(){
+        undoBtn.setOnClickListener() {
             drawingView.undoDrawing()
+        }
+        val saveBtn = findViewById<ImageButton>(R.id.ib_save)
+        saveBtn.setOnClickListener() {
+            lifecycleScope.launch {
+                val bitmap = getBitmapFromView(findViewById(R.id.fl_drawing_view_container))
+                saveFile(bitmap)
+            }
+
         }
 
     }
@@ -110,7 +128,12 @@ class MainActivity : AppCompatActivity() {
             }
             builder.show()
         } else {
-            activityLauncher.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
+            activityLauncher.launch(
+                arrayOf(
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
+            )
         }
     }
 
@@ -132,6 +155,52 @@ class MainActivity : AppCompatActivity() {
                 )
             )
         }
+    }
+
+    private fun getBitmapFromView(view: View): Bitmap {
+        val bitm = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitm)
+        val background = view.background
+        if (view.background != null) {
+            background.draw(canvas)
+        } else {
+            canvas.drawColor(Color.WHITE)
+        }
+        view.draw(canvas)
+        return bitm
+    }
+
+    private suspend fun saveFile(bitmap: Bitmap?): String {
+        var result = ""
+        withContext(Dispatchers.IO) {
+            if (bitmap != null) {
+                try {
+                    val bytes = ByteArrayOutputStream()
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 90, bytes)
+                    val f = File(
+                        externalCacheDir?.absoluteFile.toString()
+                                + File.separator + "KidsDrawingApp" + System.currentTimeMillis() / 1000 + ".png"
+                    )
+                    val fo = FileOutputStream(f)
+                    fo.write(bytes.toByteArray())
+                    fo.close()
+                    result = f.absolutePath
+                    println(result)
+                    runOnUiThread {
+                        if (result.isNotEmpty()) {
+                            Toast.makeText(this@MainActivity, "Saved on $result", Toast.LENGTH_LONG)
+                                .show()
+                        }
+                    }
+                } catch (err: Error) {
+                    runOnUiThread {
+                        Toast.makeText(this@MainActivity, "Something Went Wrong", Toast.LENGTH_LONG)
+                            .show()
+                    }
+                }
+            }
+        }
+        return result
     }
 
 }
