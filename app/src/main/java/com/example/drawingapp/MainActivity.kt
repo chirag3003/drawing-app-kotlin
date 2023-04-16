@@ -32,6 +32,7 @@ import java.io.FileOutputStream
 class MainActivity : AppCompatActivity() {
     private lateinit var drawingView: DrawingView
     private lateinit var imageButtonCurrentPaint: ImageButton
+    private var customProgressDialog:Dialog?=null
     private val openGalleryLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK && result.data != null) {
@@ -170,8 +171,10 @@ class MainActivity : AppCompatActivity() {
         return bitm
     }
 
+
     private suspend fun saveFile(bitmap: Bitmap?): String {
         var result = ""
+        showProgressDialog()
         withContext(Dispatchers.IO) {
             if (bitmap != null) {
                 try {
@@ -191,6 +194,7 @@ class MainActivity : AppCompatActivity() {
                             Toast.makeText(this@MainActivity, "Saved on $result", Toast.LENGTH_LONG)
                                 .show()
                         }
+                        customProgressDialog?.dismiss()
                     }
                 } catch (err: Error) {
                     runOnUiThread {
@@ -201,6 +205,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return result
+    }
+
+    private fun showProgressDialog(){
+        customProgressDialog = Dialog(this@MainActivity)
+        customProgressDialog?.setContentView(R.layout.progress_dialog)
+        customProgressDialog?.show()
     }
 
 }
