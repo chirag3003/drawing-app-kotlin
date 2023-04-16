@@ -7,6 +7,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.media.MediaScannerConnection
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
@@ -32,6 +33,7 @@ import java.io.FileOutputStream
 class MainActivity : AppCompatActivity() {
     private lateinit var drawingView: DrawingView
     private lateinit var imageButtonCurrentPaint: ImageButton
+    private lateinit var bgImage: ImageView ;
     private var customProgressDialog:Dialog?=null
     private val openGalleryLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -69,6 +71,7 @@ class MainActivity : AppCompatActivity() {
                 R.drawable.pallet_pressed
             )
         )
+        bgImage =  findViewById(R.id.iv_background)
 
         val brushBtn = findViewById<ImageButton>(R.id.ib_brush)
         brushBtn.setOnClickListener {
@@ -90,7 +93,11 @@ class MainActivity : AppCompatActivity() {
                 val bitmap = getBitmapFromView(findViewById(R.id.fl_drawing_view_container))
                 saveFile(bitmap)
             }
-
+        }
+        val delBtn = findViewById<ImageButton>(R.id.ib_delete)
+        delBtn.setOnClickListener() {
+            drawingView.deleteDrawing()
+            bgImage.setImageURI(null)
         }
 
     }
@@ -119,7 +126,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestPermission() {
-        println("it was called")
         if (shouldShowRequestPermissionRationale(android.Manifest.permission.READ_EXTERNAL_STORAGE)) {
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Permission Required");
@@ -193,6 +199,7 @@ class MainActivity : AppCompatActivity() {
                         if (result.isNotEmpty()) {
                             Toast.makeText(this@MainActivity, "Saved on $result", Toast.LENGTH_LONG)
                                 .show()
+                            share(result)
                         }
                         customProgressDialog?.dismiss()
                     }
@@ -211,6 +218,17 @@ class MainActivity : AppCompatActivity() {
         customProgressDialog = Dialog(this@MainActivity)
         customProgressDialog?.setContentView(R.layout.progress_dialog)
         customProgressDialog?.show()
+    }
+
+    private fun share(result:String){
+        MediaScannerConnection.scanFile(this, arrayOf(result),null){
+            path,uri ->
+            val shareIntent = Intent()
+            shareIntent.action = Intent.ACTION_SEND
+            shareIntent.putExtra(Intent.EXTRA_STREAM,uri)
+            shareIntent.type = "image/png"
+            startActivity(Intent.createChooser(shareIntent,"Share Your Creativity"))
+        }
     }
 
 }

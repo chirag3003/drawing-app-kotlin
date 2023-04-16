@@ -77,6 +77,11 @@ class DrawingView(context: Context,attrs:AttributeSet): View(context,attrs) {
         invalidate()
     }
 
+    fun deleteDrawing(){
+        mPaths.clear()
+        invalidate()
+    }
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val touchX = event.x // Touch event of X coordinate
         val touchY = event.y // touch event of Y coordinate
