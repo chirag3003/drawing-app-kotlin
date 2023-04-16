@@ -1,5 +1,6 @@
 package com.example.drawingapp
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
@@ -21,6 +22,7 @@ class DrawingView(context: Context,attrs:AttributeSet): View(context,attrs) {
     private var canvas: Canvas? = null
 
     private val mPaths = ArrayList<CustomPath>() // Stores all the paths that was drawn on the screen
+    private val mUndoPaths = ArrayList<CustomPath>()
 
     init {
         setUpDrawing()
@@ -67,6 +69,13 @@ class DrawingView(context: Context,attrs:AttributeSet): View(context,attrs) {
         }
     }
 
+
+    fun undoDrawing(){
+        if(mPaths.isEmpty()) return;
+        println(mPaths)
+        mUndoPaths.add(mPaths.removeLast())
+        invalidate()
+    }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val touchX = event.x // Touch event of X coordinate

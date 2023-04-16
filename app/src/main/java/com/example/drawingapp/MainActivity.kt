@@ -69,6 +69,11 @@ class MainActivity : AppCompatActivity() {
             requestPermission()
         }
 
+        val undoBtn = findViewById<ImageButton>(R.id.ib_undo)
+        undoBtn.setOnClickListener(){
+            drawingView.undoDrawing()
+        }
+
     }
 
     private fun showBrushSizeDialog() {
